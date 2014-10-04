@@ -344,6 +344,7 @@ mod tests {
     use std::from_str::FromStr;
     use std::rand::Rng;
     use std::rand;
+	use std::vec;
 
     use super::TNetString;
     use super::{Str, Int, Float, Bool, Null, Map, Vec};
