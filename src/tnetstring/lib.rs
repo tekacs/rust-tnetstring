@@ -11,6 +11,7 @@ use std::f64;
 use std::fmt;
 use std::io;
 use std::num::strconv;
+use std::vec;
 
 pub enum Error {
     MissingLengthPrefix,
@@ -60,13 +61,13 @@ impl fmt::Show for Error {
 
 /// Represents a TNetString value.
 pub enum TNetString {
-    Str(Vec<u8>),
+    Str(vec::Vec<u8>),
     Int(int),
     Float(f64),
     Bool(bool),
     Null,
-    Map(HashMap<Vec<u8>, TNetString>),
-    Vec(Vec<TNetString>),
+    Map(HashMap<vec::Vec<u8>, TNetString>),
+    Vec(vec::Vec<TNetString>),
 }
 
 /// Serializes a TNetString value into a `Writer`.
@@ -122,7 +123,7 @@ pub fn to_writer(writer: &mut Writer, tnetstring: &TNetString) -> io::IoResult<(
 }
 
 /// Serializes a TNetString value into a byte string.
-pub fn to_bytes(tnetstring: &TNetString) -> io::IoResult<Vec<u8>> {
+pub fn to_bytes(tnetstring: &TNetString) -> io::IoResult<vec::Vec<u8>> {
     let mut wr = io::MemWriter::new();
     try!(to_writer(&mut wr as &mut Writer, tnetstring));
     Ok(wr.unwrap())
@@ -250,7 +251,7 @@ pub fn from_reader<R: Reader + Buffer>(rdr: &mut R) -> Result<Option<TNetString>
     Ok(value)
 }
 
-fn parse_vec(data: &[u8]) -> Result<Vec<TNetString>, Error> {
+fn parse_vec(data: &[u8]) -> Result<vec::Vec<TNetString>, Error> {
     if data.is_empty() { return Ok(vec![]); }
 
     let mut result = vec![];
@@ -264,7 +265,7 @@ fn parse_vec(data: &[u8]) -> Result<Vec<TNetString>, Error> {
     }
 }
 
-fn parse_pair<R: Reader + Buffer>(rdr: &mut R) -> Result<Option<(Vec<u8>, TNetString)>, Error> {
+fn parse_pair<R: Reader + Buffer>(rdr: &mut R) -> Result<Option<(vec::Vec<u8>, TNetString)>, Error> {
     match try!(from_reader(rdr)) {
         Some(Str(key)) => {
             match try!(from_reader(rdr)) {
@@ -277,7 +278,7 @@ fn parse_pair<R: Reader + Buffer>(rdr: &mut R) -> Result<Option<(Vec<u8>, TNetSt
     }
 }
 
-fn parse_map(data: &[u8]) -> Result<HashMap<Vec<u8>, TNetString>, Error> {
+fn parse_map(data: &[u8]) -> Result<HashMap<vec::Vec<u8>, TNetString>, Error> {
     let mut result = HashMap::new();
     let mut rdr = io::BufReader::new(data);
 
@@ -419,7 +420,7 @@ mod tests {
             if rng.gen_range(depth, 10u32) <= 4u32 {
                 if rng.gen_range(0u32, 1u32) == 0u32 {
                     let n = rng.gen_range(0u32, 10u32);
-                    Vec(Vec::from_fn(n as uint, |_i|
+                    Vec(vec::Vec::from_fn(n as uint, |_i|
                         get_random_object(rng, depth + 1u32)
                     ))
                 } else {
